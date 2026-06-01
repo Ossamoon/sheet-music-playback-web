@@ -1,73 +1,31 @@
-# React + TypeScript + Vite
+# Sheet Music Playback Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Built at the **ADC Japan 2026 Hackathon**.
 
-Currently, two official plugins are available:
+A web app for viewing sheet music and playing it back with synchronized note highlighting.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Load a MusicXML or MEI score — drop in your own file (`.mxl`, `.musicxml`, `.xml`, `.mei`) or pick one of the bundled samples — and the app renders it as engraved sheet music. Press play and the corresponding notes light up on the page in time with the MIDI playback, with a piano-roll view alongside. You can also click a note to seek to that position.
 
-## React Compiler
+## How it works
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The app is built around a single shared [Verovio](https://www.verovio.org/) toolkit (running as WebAssembly), so the rendered notation, the MIDI playback, and seeking all share the same element IDs. That common ID space is what keeps note highlighting and note-clicks aligned with the audio. Playback and the piano roll are powered by [html-midi-player](https://github.com/cifkao/html-midi-player).
 
-## Expanding the ESLint configuration
+- **Sheet rendering** — Verovio renders MusicXML/MEI to SVG notation.
+- **Playback** — Verovio converts the score to MIDI, played back through html-midi-player.
+- **Synchronized highlighting** — a pre-computed timemap drives note highlighting on the page as playback advances.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Tech stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vite.dev/)
+- [Verovio](https://www.verovio.org/) — music notation engraving
+- [html-midi-player](https://github.com/cifkao/html-midi-player) — MIDI playback and piano roll
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Getting started
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev      # start the dev server
+npm run build    # type-check and build for production
+npm run preview  # preview the production build
 ```

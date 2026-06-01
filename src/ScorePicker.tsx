@@ -41,6 +41,15 @@ export function ScorePicker({ onSelect }: ScorePickerProps) {
 
   return (
     <main className="picker">
+      <a
+        className="github-link"
+        href="https://github.com/Ossamoon/sheet-music-playback-web"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="View source on GitHub"
+      >
+        <img src="/github.png" alt="" width={28} height={28} />
+      </a>
       <section
         className={dragOver ? 'drop-zone drag-over' : 'drop-zone'}
         onDragOver={(e) => {
