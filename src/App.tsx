@@ -1,121 +1,97 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useMemo, useRef, useState } from 'react'
+import {
+  VerovioSheetView,
+  type VerovioSheetViewHandle,
+} from './verovio/VerovioSheetView'
+import {
+  VerovioMidiPlayer,
+  type VerovioMidiPlayerHandle,
+} from './verovio/VerovioMidiPlayer'
+import { VerovioProvider, useVerovio } from './verovio/VerovioProvider'
+import scoreUrl from './assets/bahha-6tsuno-xiaopureryudo-bwv-933-938.mxl?url'
+
+const OPTIONS = { scale: 40, breaks: 'auto' } as const
 
 function App() {
-  const [count, setCount] = useState(0)
+  return (
+    <VerovioProvider src={scoreUrl} options={OPTIONS}>
+      <ScorePlayer />
+    </VerovioProvider>
+  )
+}
+
+/** Consumes the single shared toolkit: sheet display, playback and seeking all
+ *  read the same xml:id space, so highlighting and note-clicks line up. */
+function ScorePlayer() {
+  const { isReady, pageCount, renderToMIDI, getElementsAtTime, getTimeForElement } =
+    useVerovio()
+  const [page, setPage] = useState(1)
+  const playerRef = useRef<VerovioMidiPlayerHandle>(null)
+  const sheetRef = useRef<VerovioSheetViewHandle>(null)
+
+  // Playback position (ms) → highlight the sounding notes (imperative, no
+  // re-render) and follow the page.
+  const handleTimeUpdate = (ms: number) => {
+    const at = getElementsAtTime(ms)
+    if (!at) return
+    sheetRef.current?.setHighlight(at.notes)
+    if (at.page > 0 && at.page !== page) setPage(at.page)
+  }
+
+  // Generate the MIDI once the score is loaded (renderToMIDI's identity changes then).
+  const midiBase64 = useMemo(
+    () => (isReady ? (renderToMIDI() ?? undefined) : undefined),
+    [isReady, renderToMIDI],
+  )
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+    <main className="player-demo">
+      <section className="sheet-pane">
+        <VerovioSheetView
+          ref={sheetRef}
+          page={page}
+          onNoteClick={(id) => {
+            const ms = getTimeForElement(id)
+            if (ms != null && ms >= 0) playerRef.current?.seek(ms / 1000)
+          }}
+        />
+
+        {pageCount > 0 && (
+          <nav className="page-nav">
+            {page > 1 && (
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                ← 前のページ
+              </button>
+            )}
+            <span className="page-nav-label">
+              ページ {page} / {pageCount}
+            </span>
+            {page < pageCount && (
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+              >
+                次のページ →
+              </button>
+            )}
+          </nav>
+        )}
       </section>
 
-      <div className="ticks"></div>
+      <section className="play-pane">
+        <h1>Sheet Music Playback</h1>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
+        <VerovioMidiPlayer
+          ref={playerRef}
+          midiBase64={midiBase64}
+          showPianoRoll
+          onTimeUpdate={handleTimeUpdate}
+        />
       </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    </main>
   )
 }
 

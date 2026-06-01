@@ -10,9 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "html-midi-player": "^1.6.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "verovio": "^6.2.0"
+    "verovio": "^5.7.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

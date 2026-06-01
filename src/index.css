@@ -17,7 +17,7 @@
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
-  color-scheme: light dark;
+  color-scheme: light;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -30,32 +30,11 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
+/* Light mode is fixed: no prefers-color-scheme: dark overrides. */
 
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
+  width: 100%;
+  margin: 0;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -108,4 +87,110 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+/* --- Verovio playback demo --- */
+:root {
+  --vrv-highlight: var(--accent);
+}
+
+/* Full-screen left/right split, fixed 50/50 at the center. */
+.player-demo {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100svh;
+  text-align: left;
+}
+
+/* Left: sheet music. Right: transport + piano roll. Each scrolls on its own. */
+.sheet-pane,
+.play-pane {
+  box-sizing: border-box;
+  height: 100svh;
+  overflow: auto;
+  padding: 16px;
+}
+
+.sheet-pane {
+  border-right: 1px solid var(--border);
+}
+
+.play-pane {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.play-pane h1 {
+  font-size: 28px;
+  letter-spacing: -0.5px;
+  margin: 8px 0 4px;
+}
+
+.verovio-midi-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.verovio-midi-player midi-player {
+  width: 100%;
+}
+
+.verovio-midi-player midi-visualizer {
+  width: 100%;
+}
+
+.page-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+  font-family: var(--mono);
+  font-size: 14px;
+}
+
+.page-nav button {
+  font: inherit;
+  cursor: pointer;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.page-nav button:hover {
+  background: var(--code-bg);
+}
+
+.page-nav-label {
+  min-width: 9ch;
+  text-align: center;
+}
+
+.verovio-svg svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Highlight the notes sounding at the playhead. */
+.verovio-svg .playing,
+.verovio-svg .playing * {
+  fill: var(--vrv-highlight);
+  stroke: var(--vrv-highlight);
+}
+
+.verovio-svg g.note {
+  cursor: pointer;
+}
+
+.verovio-error {
+  color: #d4351c;
 }
