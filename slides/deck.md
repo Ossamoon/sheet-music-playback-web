@@ -34,3 +34,12 @@ One shared **Verovio** toolkit (WebAssembly) → notation, MIDI, and seeking all
 - **Pre-computed timemap** drives note highlighting as playback advances
 
 `React 19` · `TypeScript` · `Vite` · `Verovio` · `html-midi-player`
+
+---
+
+## Try it out
+
+| Demo | GitHub |
+| :---: | :---: |
+| ![w:240 h:240](../public/demo.png) | ![w:240 h:240](../public/github.png) |
+| **Live Demo** | **Source Code** |

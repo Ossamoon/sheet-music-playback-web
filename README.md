@@ -4,6 +4,8 @@
 
 A web app for viewing sheet music and playing it back with synchronized note highlighting.
 
+**[▶ Live demo](https://ossamoon.github.io/sheet-music-playback-web)**
+
 Load a MusicXML or MEI score — drop in your own file (`.mxl`, `.musicxml`, `.xml`, `.mei`) or pick one of the bundled samples — and the app renders it as engraved sheet music. Press play and the corresponding notes light up on the page in time with the MIDI playback, with a piano-roll view alongside. You can also click a note to seek to that position.
 
 ## How it works

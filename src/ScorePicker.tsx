@@ -48,7 +48,7 @@ export function ScorePicker({ onSelect }: ScorePickerProps) {
         rel="noopener noreferrer"
         aria-label="View source on GitHub"
       >
-        <img src="/github.png" alt="" width={28} height={28} />
+        GitHub
       </a>
       <section
         className={dragOver ? 'drop-zone drag-over' : 'drop-zone'}
