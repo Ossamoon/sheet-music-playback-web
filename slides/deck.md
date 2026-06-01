@@ -31,7 +31,6 @@ One shared **Verovio** toolkit (WebAssembly) → notation, MIDI, and seeking all
 
 - **Verovio** — MusicXML/MEI → SVG notation **+** MIDI
 - **html-midi-player** — MIDI playback & piano roll
-- **Pre-computed timemap** drives note highlighting as playback advances
 
 `React 19` · `TypeScript` · `Vite` · `Verovio` · `html-midi-player`
 
