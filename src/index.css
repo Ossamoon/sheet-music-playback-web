@@ -113,7 +113,8 @@ code {
   padding: 16px;
 }
 
-.sheet-pane {
+/* Divider between the two panes, regardless of their order. */
+.player-demo > section:first-child {
   border-right: 1px solid var(--border);
 }
 
@@ -166,8 +167,14 @@ code {
   color: var(--text-h);
 }
 
-.page-nav button:hover {
+.page-nav button:hover:not(:disabled) {
   background: var(--code-bg);
+}
+
+.page-nav button:disabled {
+  opacity: 0.4;
+  color: var(--text);
+  cursor: not-allowed;
 }
 
 .page-nav-label {

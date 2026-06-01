@@ -27,6 +27,7 @@ export function ScorePlayer({ onBack }: ScorePlayerProps) {
     getPageWithElement,
   } = useVerovio()
   const [page, setPage] = useState(1)
+  const [isPlaying, setIsPlaying] = useState(false)
   const playerRef = useRef<VerovioMidiPlayerHandle>(null)
   const sheetRef = useRef<VerovioSheetViewHandle>(null)
 
@@ -90,6 +91,22 @@ export function ScorePlayer({ onBack }: ScorePlayerProps) {
 
   return (
     <main className="player-demo">
+      <section className="play-pane">
+        <button type="button" className="back-button" onClick={onBack}>
+          ← Back
+        </button>
+        <h1>Sheet Music Playback</h1>
+
+        <VerovioMidiPlayer
+          ref={playerRef}
+          midiBase64={midiBase64}
+          showPianoRoll
+          onTimeUpdate={handleTimeUpdate}
+          onStart={() => setIsPlaying(true)}
+          onStop={() => setIsPlaying(false)}
+        />
+      </section>
+
       <section className="sheet-pane">
         <VerovioSheetView
           ref={sheetRef}
@@ -105,6 +122,7 @@ export function ScorePlayer({ onBack }: ScorePlayerProps) {
             {page > 1 && (
               <button
                 type="button"
+                disabled={isPlaying}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
                 ← Prev
@@ -116,6 +134,7 @@ export function ScorePlayer({ onBack }: ScorePlayerProps) {
             {page < pageCount && (
               <button
                 type="button"
+                disabled={isPlaying}
                 onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
               >
                 Next →
@@ -123,20 +142,6 @@ export function ScorePlayer({ onBack }: ScorePlayerProps) {
             )}
           </nav>
         )}
-      </section>
-
-      <section className="play-pane">
-        <button type="button" className="back-button" onClick={onBack}>
-          ← Back
-        </button>
-        <h1>Sheet Music Playback</h1>
-
-        <VerovioMidiPlayer
-          ref={playerRef}
-          midiBase64={midiBase64}
-          showPianoRoll
-          onTimeUpdate={handleTimeUpdate}
-        />
       </section>
     </main>
   )
