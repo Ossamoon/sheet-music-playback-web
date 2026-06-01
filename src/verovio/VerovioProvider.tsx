@@ -46,10 +46,18 @@ export interface VerovioProviderProps {
   children: ReactNode;
 }
 
-function isZipUrl(url: string, contentType: string | null): boolean {
-  const lower = url.toLowerCase();
-  if (lower.endsWith(".mxl") || lower.endsWith(".zip")) return true;
-  return contentType != null && contentType.includes("zip");
+/** Zip files (.mxl is zipped MusicXML) start with the local-file-header magic "PK\x03\x04".
+ *  Sniffing the bytes is robust to how the asset is served — in particular Vite inlines
+ *  small assets as `data:` URLs, which carry neither a `.mxl` extension nor a zip MIME type. */
+function isZipBuffer(buf: ArrayBuffer): boolean {
+  const head = new Uint8Array(buf, 0, Math.min(4, buf.byteLength));
+  return (
+    head.length >= 4 &&
+    head[0] === 0x50 && // P
+    head[1] === 0x4b && // K
+    head[2] === 0x03 &&
+    head[3] === 0x04
+  );
 }
 
 /**
@@ -138,14 +146,14 @@ export function VerovioProvider({
         } else if (src) {
           const res = await fetch(src);
           if (cancelled) return;
-          if (isZipUrl(src, res.headers.get("content-type"))) {
-            const buf = await res.arrayBuffer();
-            if (cancelled) return;
+          // Sniff the bytes rather than trusting the URL/MIME type: a small sample
+          // may be inlined by the bundler as a `data:` URL with no extension.
+          const buf = await res.arrayBuffer();
+          if (cancelled) return;
+          if (isZipBuffer(buf)) {
             ok = toolkit.loadZipDataBuffer(buf);
           } else {
-            const text = await res.text();
-            if (cancelled) return;
-            ok = toolkit.loadData(text);
+            ok = toolkit.loadData(new TextDecoder().decode(buf));
           }
         } else {
           // Nothing to load yet.

@@ -39,6 +39,12 @@ One shared **Verovio** toolkit (WebAssembly) → notation, MIDI, and seeking all
 
 ## Try it out
 
+<style scoped>
+table { border: none; margin: 48px auto 0; }
+table tr { border: none; background: none; }
+table td, table th { border: none; padding: 0 80px; text-align: center; }
+</style>
+
 | Demo | GitHub |
 | :---: | :---: |
 | ![w:240 h:240](../public/demo.png) | ![w:240 h:240](../public/github.png) |
