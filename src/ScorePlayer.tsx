@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { TimeMapEntry } from 'verovio'
 import {
   VerovioSheetView,
   type VerovioSheetViewHandle,
@@ -17,19 +18,68 @@ export interface ScorePlayerProps {
 /** Consumes the single shared toolkit: sheet display, playback and seeking all
  *  read the same xml:id space, so highlighting and note-clicks line up. */
 export function ScorePlayer({ onBack }: ScorePlayerProps) {
-  const { isReady, pageCount, renderToMIDI, getElementsAtTime, getTimeForElement } =
-    useVerovio()
+  const {
+    isReady,
+    pageCount,
+    renderToMIDI,
+    getTimemap,
+    getTimeForElement,
+    getPageWithElement,
+  } = useVerovio()
   const [page, setPage] = useState(1)
   const playerRef = useRef<VerovioMidiPlayerHandle>(null)
   const sheetRef = useRef<VerovioSheetViewHandle>(null)
 
-  // Playback position (ms) → highlight the sounding notes (imperative, no
-  // re-render) and follow the page.
+  // Pre-computed note on/off schedule, advanced by a pointer as time flows.
+  const timemapRef = useRef<TimeMapEntry[]>([])
+  const pointerRef = useRef(0)
+  const activeRef = useRef<Set<string>>(new Set())
+  const lastMsRef = useRef(-1)
+
+  // Pre-compute the timemap once the score is ready (and on score change).
+  useEffect(() => {
+    timemapRef.current = isReady ? (getTimemap() ?? []) : []
+    pointerRef.current = 0
+    activeRef.current = new Set()
+    lastMsRef.current = -1
+  }, [isReady, getTimemap])
+
+  // Playback position (ms) → advance the on/off pointer and update the highlight
+  // imperatively (no re-render). Driven by the player's smooth clock.
   const handleTimeUpdate = (ms: number) => {
-    const at = getElementsAtTime(ms)
-    if (!at) return
-    sheetRef.current?.setHighlight(at.notes)
-    if (at.page > 0 && at.page !== page) setPage(at.page)
+    const tm = timemapRef.current
+    if (tm.length === 0) return
+
+    // Seek backwards / restart: rebuild the active set from the start.
+    if (ms < lastMsRef.current) {
+      pointerRef.current = 0
+      activeRef.current.clear()
+    }
+    lastMsRef.current = ms
+
+    const active = activeRef.current
+    let changed = false
+    let newlyOn: string | undefined
+    while (pointerRef.current < tm.length && tm[pointerRef.current].tstamp <= ms) {
+      const entry = tm[pointerRef.current]
+      entry.off?.forEach((id) => {
+        if (active.delete(id)) changed = true
+      })
+      entry.on?.forEach((id) => {
+        active.add(id)
+        changed = true
+        newlyOn = id
+      })
+      pointerRef.current++
+    }
+
+    if (changed) sheetRef.current?.setHighlight([...active])
+
+    // Follow the page only when a note newly sounds (cheap, transition-only).
+    if (newlyOn) {
+      const pg = getPageWithElement(newlyOn)
+      if (pg != null && pg > 0 && pg !== page) setPage(pg)
+    }
   }
 
   // Generate the MIDI once the score is loaded (renderToMIDI's identity changes then).

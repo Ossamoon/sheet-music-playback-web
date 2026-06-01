@@ -31,6 +31,8 @@ export interface VerovioContextValue {
   getElementsAtTime: (ms: number) => { notes: string[]; page: number } | null;
   getTimeForElement: (xmlId: string) => number | null;
   getTimemap: (opts?: TimeMapOptions) => TimeMapEntry[] | null;
+  /** 1-based page the element is rendered on (0 if not found, null until ready). */
+  getPageWithElement: (xmlId: string) => number | null;
 }
 
 const VerovioContext = createContext<VerovioContextValue | null>(null);
@@ -196,6 +198,11 @@ export function VerovioProvider({
       loaded && toolkit ? toolkit.renderToTimemap(opts) : null,
     [toolkit, loaded],
   );
+  const getPageWithElement = useCallback(
+    (xmlId: string) =>
+      loaded && toolkit ? toolkit.getPageWithElement(xmlId) : null,
+    [toolkit, loaded],
+  );
 
   const value = useMemo<VerovioContextValue>(
     () => ({
@@ -210,6 +217,7 @@ export function VerovioProvider({
       getElementsAtTime,
       getTimeForElement,
       getTimemap,
+      getPageWithElement,
     }),
     [
       toolkit,
@@ -223,6 +231,7 @@ export function VerovioProvider({
       getElementsAtTime,
       getTimeForElement,
       getTimemap,
+      getPageWithElement,
     ],
   );
 

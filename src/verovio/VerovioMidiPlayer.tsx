@@ -50,6 +50,10 @@ export const VerovioMidiPlayer = forwardRef<
   const playerRef = useRef<MidiPlayerElement>(null);
   const visualizerRef = useRef<MidiVisualizerElement>(null);
   const rafRef = useRef<number | null>(null);
+  // A smooth playback clock: html-midi-player's currentTime only advances at
+  // note onsets, so we anchor wall-clock time at each onset and interpolate
+  // between them. nowMs = offsetMs + (performance.now() - t0).
+  const clockRef = useRef({ t0: 0, offsetMs: 0 });
 
   // Keep the latest callbacks in refs so listeners need not be re-bound.
   const onTimeUpdateRef = useRef(onTimeUpdate);
@@ -95,20 +99,31 @@ export const VerovioMidiPlayer = forwardRef<
     }
   }, [soundFont]);
 
-  // Link player↔visualizer (native follow) and sample currentTime while playing.
+  // Link player↔visualizer (native follow) and drive a smooth playback clock.
   useEffect(() => {
     const player = playerRef.current;
     if (!player) return;
     const visualizer = visualizerRef.current;
     if (showPianoRoll && visualizer) player.addVisualizer(visualizer);
 
+    const anchor = (offsetMs: number) => {
+      clockRef.current = { t0: performance.now(), offsetMs };
+    };
     const tick = () => {
-      onTimeUpdateRef.current?.(player.currentTime * 1000);
+      const { t0, offsetMs } = clockRef.current;
+      onTimeUpdateRef.current?.(offsetMs + (performance.now() - t0));
       rafRef.current = requestAnimationFrame(tick);
     };
     const handleStart = () => {
+      anchor(player.currentTime * 1000);
       onStartRef.current?.();
       if (rafRef.current == null) rafRef.current = requestAnimationFrame(tick);
+    };
+    // Re-anchor to the real playback position at every note onset (corrects drift).
+    const handleNote = (event: Event) => {
+      const note = (event as CustomEvent<{ note: { startTime: number } }>)
+        .detail.note;
+      anchor(note.startTime * 1000);
     };
     const handleStop = () => {
       if (rafRef.current != null) {
@@ -120,9 +135,11 @@ export const VerovioMidiPlayer = forwardRef<
     };
 
     player.addEventListener("start", handleStart);
+    player.addEventListener("note", handleNote);
     player.addEventListener("stop", handleStop);
     return () => {
       player.removeEventListener("start", handleStart);
+      player.removeEventListener("note", handleNote);
       player.removeEventListener("stop", handleStop);
       if (rafRef.current != null) {
         cancelAnimationFrame(rafRef.current);
