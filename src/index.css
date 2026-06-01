@@ -194,3 +194,91 @@ code {
 .verovio-error {
   color: #d4351c;
 }
+
+/* --- Score picker (first screen) --- */
+.picker {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  height: 100svh;
+}
+
+.drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin: 24px;
+  padding: 24px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  text-align: center;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.drop-zone.drag-over {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.drop-hint {
+  color: var(--text);
+}
+
+.samples {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+.samples ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(360px, 100%);
+}
+
+.samples li {
+  display: flex;
+}
+
+/* Shared button look for picker + back button. */
+.drop-zone button,
+.samples button,
+.back-button {
+  font: inherit;
+  cursor: pointer;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  transition: background 0.15s;
+}
+
+.samples button {
+  width: 100%;
+}
+
+.drop-zone button:hover,
+.samples button:hover,
+.back-button:hover {
+  background: var(--code-bg);
+  border-color: var(--accent-border);
+}
+
+.back-button {
+  align-self: flex-start;
+  font-size: 14px;
+  padding: 6px 12px;
+}

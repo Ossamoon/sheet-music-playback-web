@@ -82,9 +82,9 @@ export const VerovioSheetView = forwardRef<
   return (
     <div className={className}>
       {error && (
-        <p className="verovio-error">楽譜の読み込みに失敗しました: {error.message}</p>
+        <p className="verovio-error">Failed to load score: {error.message}</p>
       )}
-      {isLoading && !svg && <p className="verovio-loading">読み込み中…</p>}
+      {isLoading && !svg && <p className="verovio-loading">Loading…</p>}
       <div
         ref={containerRef}
         className="verovio-svg"
